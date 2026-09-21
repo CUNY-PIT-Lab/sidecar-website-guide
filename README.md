@@ -91,7 +91,7 @@ Run the key-free tests and check that the index can produce all route shells:
 python3 scripts/build_pages.py --check-index
 ```
 
-The current release passes 388 Python tests, 31 browser-core and bridge tests, and 18 snapshot-capture safety tests across retrieval, API contracts, privacy, source authority, grounding, conversation persistence, the crawler, the Pages builder, production limits, warm-up behavior, responsive layout, member access, styling safeguards, and Wix secret handling.
+The current release passes 389 Python tests, 32 browser-core and bridge tests, and 18 snapshot-capture safety tests across retrieval, API contracts, privacy, source authority, grounding, conversation persistence, the crawler, the Pages builder, production limits, warm-up behavior, responsive layout, member access, styling safeguards, and Wix secret handling.
 
 The [Website Guide evaluation suite](evals/website-guide/README.md) adds a fixed 41-case synthetic benchmark across broad and specific intent, typos, multilingual requests, privacy, adversarial input, page awareness, follow-up context, and input boundaries. Its executable gates are stricter than the unit tests and produce a versioned run record for staff review.
 
