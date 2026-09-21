@@ -2,7 +2,7 @@
 
 <div align="center">
 
-**[▶ Live deployment — zmuhls.github.io/fortune-digital-equity-guide-demo](https://zmuhls.github.io/fortune-digital-equity-guide-demo/)**
+**[▶ Live production guide](https://guide-api-production-a1a1.up.railway.app/)**
 
 Built and deployed by [@zmuhls](https://github.com/zmuhls) · [CUNY AI Lab](https://github.com/CUNY-AI-Lab)
 
@@ -11,20 +11,20 @@ Built and deployed by [@zmuhls](https://github.com/zmuhls) · [CUNY AI Lab](http
 This is the CUNY PIT Lab link-only integration for the canonical public
 demonstration above. It tracks the same reviewed source and code, but does not
 publish a second Pages site, Railway service, evaluator, or transcript store.
-The current mirrored inventory contains 138 public Fortune Digital Equity routes
-at Wix revision 2063. Each inert page preserves rendered public content while
+The current mirrored inventory contains 150 public Fortune Digital Equity routes
+at Wix revision 2090. Each inert page preserves rendered public content while
 removing Wix scripts, forms, tokens, trackers, and authenticated services.
 Internal navigation stays within the canonical mirror; booking, forms, uploads,
 and member actions lead to the live Fortune site.
 
-The production page remains readable when the model service is unavailable. In that state, the Fortune-hosted static build uses the public index for page context and links visitors to source pages. The production configuration calls a separate Railway backend at `https://guide-api-production-a1a1.up.railway.app`. That service holds the provider key, accepts the `https://zmuhls.github.io` browser origin, and applies per-client and shared daily model-call limits. The server preloads GLM-5.2 at startup. The Pages and Wix clients repeat the same empty warm-up request when the guide loads, while a server-side cooldown collapses visitors into one provider call and keeps the model ready for 30 minutes.
+The production pages remain readable when the model service is unavailable. The single production service is `https://guide-api-production-a1a1.up.railway.app`; this repository links to it and does not deploy another copy. The server keeps provider credentials private, applies per-client and shared daily limits, uses CAIL-hosted GLM-5.3-flash as its primary model, and has a bounded OpenRouter GLM-5.3-flash fallback. A cooldown coalesces warm-up traffic and keeps the primary model ready for 30 minutes.
 
 ## Source limits
 
 The index is a public-site inventory, not a claim that every URL can support an answer. The current crawl contains:
 
 - 90 current operational pages that may support answers.
-- 18 excluded pages, including new routes awaiting review, inactive, member, upload, and administrative pages.
+- 30 excluded pages, including new routes awaiting review, inactive, member, upload, and administrative pages.
 - 21 archived pages retained for provenance and historical navigation.
 - 9 navigation records that can lead to another page but cannot establish current service facts.
 
@@ -42,16 +42,16 @@ The guide stays compact: two page-specific actions, one question field, a short 
 
 After a question:
 
-1. The browser starts a credential-free warm-up request while the visitor reads the page. The backend sends Ollama's documented empty preload request and keeps the model loaded for the configured period.
+1. The browser starts a credential-free warm-up request while the visitor reads the page. The backend coalesces warm-up traffic and keeps the primary model ready for the configured period.
 2. The browser sends the question, a short in-memory history, and the canonical current-page URL, path, and title.
 3. The privacy gate holds likely personal information before retrieval or model use. A standalone six-digit value is treated as a possible Fortune ID.
-4. Vague requests such as **help**, **device**, **class**, and **internet** still invoke the model and receive one short model-authored clarifying question.
+4. Vague requests such as **help**, **device**, **class**, and **internet** still invoke the model. It answers from available public context when it can and asks a short follow-up only when the source material does not support an unambiguous answer.
 5. The server checks the approved record for the current page first. A strong local match narrows the model to that record instead of emitting a fixed sentence.
 6. When the current page cannot answer, retrieval ranks up to ten usable answer-authority pages from the wider public index. All 90 answer-authority records are addressable by public title. With no lexical match, the model receives a bounded set of approved current pages and must ask one useful question rather than receiving a server-written fallback.
-7. Every valid, non-private new request reaches GLM-5.2 with the resolved question, the preceding guide answer when relevant, and bounded approved page excerpts—not raw participant history. The model returns one allowed page ID plus a concise answer, or `ASK`. The server rejects unknown IDs, invented numbers, links, unsupported selections, privacy-seeking questions, and answers without source overlap. Provider, quota, or twice-rejected outputs are operational errors and never become fabricated Guide turns.
-8. Every answer adds another useful page, the staff route, and a way to continue asking questions. The browser never receives `OLLAMA_API_KEY`.
+7. Every valid, non-private new request reaches GLM-5.3-flash with the question, up to the latest five prior exchanges, and bounded public page excerpts. The model returns a concise grounded answer or a useful follow-up question. The server rejects unsupported source selections, invented factual claims, and privacy-seeking questions. Provider or quota failures remain operational errors and never become fabricated Guide turns.
+8. When a page action is useful, the answer shows one discreet relevant link rather than a stack of competing cards. Provider credentials never reach the browser.
 
-The latest completed user question includes **Edit**. The original question and answer stay visible while the visitor edits. **Update** branches from the preceding bounded context without reusing the old server conversation, and replaces the visible pair only after the revised request succeeds. **Start over** clears the tab's local conversation, continuation token, and saved session state without deleting any transcript already retained by an authorized evaluation deployment. The Wix element follows the same behavior.
+The latest completed user question includes **Edit**. The original question and answer stay visible while the visitor edits. **Update** branches from the preceding bounded context without reusing the old server conversation, and replaces the visible pair only after the revised request succeeds. **New chat** clears the tab's local conversation, continuation token, and saved session state without deleting any transcript already retained by the authorized evaluation deployment. The conversation persists while a visitor navigates among mirrored pages in the same tab.
 
 Archive, navigation, and excluded routes still receive a tailored guide. Their page text cannot become factual answer authority. The guide moves the visitor to a current operational page.
 
@@ -59,7 +59,7 @@ Archive, navigation, and excluded routes still receive a tailored guide. Their p
 
 The guide tells visitors: **Do not enter your six-digit Fortune ID, name, phone number, email, address, case details, or other personal information.** The browser replaces a message containing a likely six-digit Fortune ID with a privacy notice before adding it to chat history or making a network request. The backend applies the same hold before retrieval or a model call. Names, contact details, case information, health information, passwords, and similar details follow the same pre-model route.
 
-Conversation capture is off by default. With `FORTUNE_CONVERSATION_CAPTURE=none`, the server writes no query log and needs no chat database. Browser history is capped at three recent exchanges (six messages) in tab-scoped session storage so it survives navigation between replica pages without being shared across tabs. Open-ended questions sent to the active model must use public or invented information.
+Conversation capture is off by default. With `FORTUNE_CONVERSATION_CAPTURE=none`, the server writes no query log and needs no chat database. Browser history is compacted to the latest five exchanges in tab-scoped session storage so it survives navigation between replica pages without being shared across tabs. Open-ended questions sent to the active model must use public or invented information.
 
 An isolated evaluation deployment may select `metadata` or `transcript` capture after Fortune approves the purpose, notice, reviewers, and retention period. Metadata mode stores identifiers and bounded routing/result fields without question or answer text. It also records server-owned interaction labels: opening or follow-up, request type, request and response language, retrieval scope, and prompt-policy version. Transcript mode stores the question and answer only when the automated privacy hold classifies the turn as clear; blocked and sensitive turns keep metadata but no message content. The hold is not guaranteed anonymization, so transcript mode is synthetic-only until Fortune approves participant use and its visible notice. Captured conversations expire after 90 days by default. See [the conversation-capture deployment contract](deployment/CONVERSATION-CAPTURE.md).
 
@@ -91,7 +91,7 @@ Run the key-free tests and check that the index can produce all route shells:
 python3 scripts/build_pages.py --check-index
 ```
 
-The test launcher runs the Python unit suite across retrieval, API contracts, privacy, source authority, grounding, conversation persistence, the crawler, the Pages builder, production limits, warm-up behavior, responsive answer expansion, member access, styling safeguards, and Wix secret handling. It then runs 23 browser-core and bridge tests plus 13 snapshot-capture safety tests.
+The current release passes 388 Python tests, 31 browser-core and bridge tests, and 18 snapshot-capture safety tests across retrieval, API contracts, privacy, source authority, grounding, conversation persistence, the crawler, the Pages builder, production limits, warm-up behavior, responsive layout, member access, styling safeguards, and Wix secret handling.
 
 The [Website Guide evaluation suite](evals/website-guide/README.md) adds a fixed 41-case synthetic benchmark across broad and specific intent, typos, multilingual requests, privacy, adversarial input, page awareness, follow-up context, and input boundaries. Its executable gates are stricter than the unit tests and produce a versioned run record for staff review.
 
@@ -102,7 +102,7 @@ python3 scripts/build_pages.py
 python3 -m http.server 8791 --directory _site
 ```
 
-The build writes 138 `index.html` route snapshots under `_site/`, including the root route, and copies only the shared files that the replica and sidecar require.
+The build writes 150 `index.html` route snapshots under `_site/`, including the root route, and copies only the shared files that the replica and sidecar require.
 
 Run the live local model demo:
 
@@ -141,7 +141,7 @@ The canonical repository's Pages workflow builds the allowlisted `_site/`
 directory and publishes the single public artifact. This PIT Lab integration
 does not include a Pages workflow or publish a second artifact.
 
-The provider remains behind the server contract. Fortune can later move from the Ollama meeting provider to its approved Microsoft route without rebuilding the participant interface.
+The provider remains behind the server contract. Fortune can later change the approved model route without rebuilding the participant interface.
 
 ## GitHub publication
 
